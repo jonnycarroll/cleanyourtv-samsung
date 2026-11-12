@@ -27,9 +27,9 @@
             artist: 'Claude Monet',
             year: '1916',
             medium: 'Oil on canvas',
-            museum: 'Musée Marmottan Monet, Paris',
+            museum: 'National Museum of Western Art, Tokyo',
             accent: 'rgba(52, 211, 153, 0.5)',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Monet_-_Water_Lilies_1916.jpg/1920px-Monet_-_Water_Lilies_1916.jpg'
+            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Claude_Monet_-_Water_Lilies_-_Google_Art_Project_%28462013%29.jpg/1920px-Claude_Monet_-_Water_Lilies_-_Google_Art_Project_%28462013%29.jpg'
         },
         {
             id: 'hokusai-great-wave',
@@ -49,7 +49,7 @@
             medium: 'Oil on canvas',
             museum: 'Mauritshuis, The Hague',
             accent: 'rgba(251, 191, 36, 0.5)',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/1600px-1665_Girl_with_a_Pearl_Earring.jpg'
+            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/1280px-1665_Girl_with_a_Pearl_Earring.jpg'
         },
         {
             id: 'klimt-the-kiss',
@@ -69,7 +69,7 @@
             medium: 'Oil on canvas',
             museum: 'Hamburger Kunsthalle, Hamburg',
             accent: 'rgba(148, 163, 184, 0.5)',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Caspar_David_Friedrich_-_Wanderer_%C3%BCber_dem_Nebelmeer.jpg/1920px-Caspar_David_Friedrich_-_Wanderer_%C3%BCber_dem_Nebelmeer.jpg'
+            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg/1280px-Caspar_David_Friedrich_-_Wanderer_above_the_sea_of_fog.jpg'
         },
         {
             id: 'seurat-grand-jatte',
@@ -89,7 +89,7 @@
             medium: 'Infrared Space Astrophotography',
             museum: 'NASA / Space Telescope Science Institute',
             accent: 'rgba(236, 72, 153, 0.5)',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/NASA%E2%80%99s_Webb_Reveals_Cosmic_Cliffs%2C_Glittering_Landscape_of_Star_Birth.png/1920px-NASA%E2%80%99s_Webb_Reveals_Cosmic_Cliffs%2C_Glittering_Landscape_of_Star_Birth.png'
+            imageUrl: 'https://assets.science.nasa.gov/dynamicimage/assets/science/missions/webb/science/2022/07/STScI-01GA6KKWG229B16K4Q38CH3BXS.png?w=2000'
         }
     ];
 
@@ -103,6 +103,9 @@
         pixelShiftX: 0,
         pixelShiftY: 0,
         shiftTimerId: null,
+        pendingImage: null,
+        imageLoadTimerId: null,
+        imageLoadState: 'ready',
 
         // DOM elements
         modalEl: null,
@@ -159,30 +162,48 @@
         close: function() {
             this.isOpen = false;
             this.stopSlideshow();
+            this.cancelImageLoad();
             if (this.modalEl) {
                 this.modalEl.style.display = 'none';
             }
             console.log('[ArtMode] Closed');
         },
 
+        cancelImageLoad: function() {
+            clearTimeout(this.imageLoadTimerId);
+            this.imageLoadTimerId = null;
+            if (this.pendingImage) {
+                this.pendingImage.onload = null;
+                this.pendingImage.onerror = null;
+                this.pendingImage = null;
+            }
+        },
+
         renderCurrentArt: function() {
             const art = ART_CATALOG[this.currentIndex];
             if (!art) return;
+            this.cancelImageLoad();
+            this.imageLoadState = 'loading';
 
-            // Fade out slightly during image transition
+            // Show a backdrop while loading rather than leaving a blank screen.
             if (this.bgImageEl) {
-                this.bgImageEl.style.opacity = '0';
+                const backdrop = `radial-gradient(ellipse at 50% 50%, ${art.accent} 0%, rgba(8, 10, 16, 0.98) 100%)`;
+                this.bgImageEl.style.backgroundImage = backdrop;
+                this.bgImageEl.style.opacity = '1';
                 
                 const tempImg = new Image();
-                tempImg.onload = () => {
-                    this.bgImageEl.style.backgroundImage = `url('${art.imageUrl}')`;
-                    this.bgImageEl.style.opacity = '1';
+                this.pendingImage = tempImg;
+                const finish = (loaded) => {
+                    // A slow previous slide must never overwrite the new one.
+                    if (!this.isOpen || this.pendingImage !== tempImg) return;
+                    this.cancelImageLoad();
+                    this.imageLoadState = loaded ? 'ready' : 'error';
+                    this.bgImageEl.style.backgroundImage = loaded ? `url('${art.imageUrl}')` : backdrop;
+                    this.updatePill();
                 };
-                tempImg.onerror = () => {
-                    // Fallback to elegant gradient if offline
-                    this.bgImageEl.style.backgroundImage = `radial-gradient(ellipse at 50% 50%, ${art.accent} 0%, rgba(8, 10, 16, 0.98) 100%)`;
-                    this.bgImageEl.style.opacity = '1';
-                };
+                tempImg.onload = () => finish(true);
+                tempImg.onerror = () => finish(false);
+                this.imageLoadTimerId = setTimeout(() => finish(false), 15000);
                 tempImg.src = art.imageUrl;
             }
 
@@ -250,7 +271,9 @@
             const current = this.currentIndex + 1;
             const total = ART_CATALOG.length;
             const status = this.isPaused ? '⏸ PAUSED' : '▶ AUTO';
-            this.statusPillEl.textContent = `${current} / ${total} · ${status}`;
+            const imageStatus = this.imageLoadState === 'loading' ? ' · LOADING IMAGE' :
+                this.imageLoadState === 'error' ? ' · IMAGE UNAVAILABLE' : '';
+            this.statusPillEl.textContent = `${current} / ${total} · ${status}${imageStatus}`;
         },
 
         updateClock: function() {

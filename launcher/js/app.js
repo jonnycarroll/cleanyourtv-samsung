@@ -146,6 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (state.currentZone === 'TOP') {
             contentViewportEl.classList.remove('show-grid');
+            contentViewportEl.scrollTop = 0;
             if (topActionBtns[state.topIndex]) {
                 focusedEl = topActionBtns[state.topIndex];
                 focusedEl.classList.add('focused');
@@ -176,6 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (state.currentZone === 'DOCK') {
             contentViewportEl.classList.remove('show-grid');
+            contentViewportEl.scrollTop = 0;
             const dockCards = dockContainerEl.querySelectorAll('.dock-card');
             if (dockCards[state.dockIndex]) {
                 focusedEl = dockCards[state.dockIndex];
@@ -183,23 +185,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 focusedApp = state.apps[state.dockIndex];
             }
         } else if (state.currentZone === 'GRID') {
+            if (!contentViewportEl.classList.contains('show-grid')) {
+                contentViewportEl.scrollTop = document.getElementById('grid-section').offsetTop;
+            }
             contentViewportEl.classList.add('show-grid');
             const gridCards = appGridEl.querySelectorAll('.grid-card');
             if (gridCards[state.gridIndex]) {
                 focusedEl = gridCards[state.gridIndex];
                 focusedEl.classList.add('focused');
                 focusedApp = state.apps[state.gridIndex];
-                // Scroll only the list, keeping the shelf and viewport in place.
-                // Use layout coordinates so focus scaling/transitions do not
-                // change the scroll target during repeated remote key presses.
-                const cardTop = focusedEl.offsetTop - appGridEl.offsetTop;
+                // All content shares this scroller, so shortcuts move out of
+                // view naturally as focus advances through the app rows.
+                const cardTop = focusedEl.offsetTop;
                 const inset = 32;
-                if (cardTop - inset < appGridEl.scrollTop) {
-                    appGridEl.scrollTop = Math.max(0, cardTop - inset);
+                if (cardTop - inset < contentViewportEl.scrollTop) {
+                    contentViewportEl.scrollTop = Math.max(0, cardTop - inset);
                 } else if (cardTop + focusedEl.offsetHeight + inset >
-                        appGridEl.scrollTop + appGridEl.clientHeight) {
-                    appGridEl.scrollTop = cardTop + focusedEl.offsetHeight +
-                        inset - appGridEl.clientHeight;
+                        contentViewportEl.scrollTop + contentViewportEl.clientHeight) {
+                    contentViewportEl.scrollTop = cardTop + focusedEl.offsetHeight +
+                        inset - contentViewportEl.clientHeight;
                 }
             }
         } else if (state.currentZone === 'MODAL') {
@@ -232,12 +236,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateFocusHighlight(focusedEl) {
-        focusedEl = focusedEl || appGridEl.querySelector('.focused');
+        focusedEl = focusedEl || contentViewportEl.querySelector('.focused');
         // Align floating focus highlight after the list has scrolled.
         if (focusedEl && state.currentZone !== 'MODAL') {
             const rect = focusedEl.getBoundingClientRect();
             if (state.currentZone === 'GRID') {
-                const bounds = appGridEl.getBoundingClientRect();
+                const bounds = contentViewportEl.getBoundingClientRect();
                 if (rect.top - 6 < bounds.top || rect.bottom + 6 > bounds.bottom) {
                     floatingFocusEl.style.opacity = '0';
                     return;
@@ -624,8 +628,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('keydown', onKeyDown);
     // Keep the highlight aligned after mouse-wheel/trackpad scrolling too.
-    appGridEl.addEventListener('scroll', function() {
-        if (state.currentZone === 'GRID') updateFocusHighlight();
+    contentViewportEl.addEventListener('scroll', function() {
+        if (state.currentZone === 'GRID' || state.currentZone === 'DOCK') updateFocusHighlight();
     });
 
     // 8. Clock & Date Tick

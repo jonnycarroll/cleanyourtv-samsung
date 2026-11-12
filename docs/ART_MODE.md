@@ -11,7 +11,7 @@ Samsung charges **\$4.99/month** for the Art Store subscription on "The Frame" T
 - **🏛️ 4K Public Domain Museum Masterpieces:**  
   Curated from the world's most prestigious institutions:
   - **The Starry Night** (Vincent van Gogh, 1889 – MoMA New York)
-  - **Water Lilies** (Claude Monet, 1916 – Musée Marmottan Paris)
+  - **Water Lilies** (Claude Monet, 1916 – National Museum of Western Art, Tokyo)
   - **The Great Wave off Kanagawa** (Katsushika Hokusai, 1831 – Met New York)
   - **Girl with a Pearl Earring** (Johannes Vermeer, 1665 – Mauritshuis The Hague)
   - **The Kiss** (Gustav Klimt, 1908 – Belvedere Vienna)
@@ -39,6 +39,15 @@ Samsung charges **\$4.99/month** for the Art Store subscription on "The Frame" T
 | **▲ Up / ▼ Down** | Toggle HUD (Clock & Museum Plaque visibility) |
 | **OK / Enter / Play / Pause** | Toggle Auto-Slideshow (Pause on your favorite painting) |
 | **Return / Back** | Exit back to CleanYourTV Home Dashboard |
+
+Artwork loads over HTTPS from Wikimedia Commons and NASA; it is not bundled
+with the app. The status pill shows **LOADING IMAGE** during a request and
+**IMAGE UNAVAILABLE** if it fails or takes longer than 15 seconds. A gradient
+backdrop remains visible on failure. Move to another painting and back to retry.
+Image dimensions vary by source; the gallery does not guarantee 4K images.
+
+The Water Lilies entry uses the [1916 painting in Tokyo](https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_Google_Art_Project_(462013).jpg).
+The nebula image comes from [NASA's Cosmic Cliffs image page](https://science.nasa.gov/asset/webb/cosmic-cliffs-in-the-carina-nebula-nircam-image/).
 
 ---
 

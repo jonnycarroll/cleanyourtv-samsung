@@ -7,7 +7,7 @@
     iframe { width: 1920px; height: 1080px; border: 0; }
 </style>
 <pre id="result">RUNNING</pre>
-<iframe src="../launcher/index.html"></iframe>
+<iframe></iframe>
 <script>
 document.querySelector('iframe').addEventListener('load', function() {
     const frame = this;
@@ -46,36 +46,47 @@ document.querySelector('iframe').addEventListener('load', function() {
         visible(dock.querySelector('.focused'), viewport);
 
         const top = viewport.getBoundingClientRect().top;
-        const shelf = doc.querySelector('.top-shelf').getBoundingClientRect().top;
+        const shelf = doc.querySelector('.top-shelf');
+        const dockTop = dock.getBoundingClientRect().top;
+        const statusBar = doc.querySelector('.top-bar').getBoundingClientRect();
+        check(top === statusBar.bottom, 'Scroller does not start below status bar');
+        check(viewport.getBoundingClientRect().bottom === 1080, 'Scroller leaves a bottom gap');
+        check(viewport.clientHeight > 900, 'Scroller does not fill available screen height');
+        check(win.getComputedStyle(grid).overflowY === 'visible', 'Grid has a nested scroller');
         key(40);
-        check(viewport.getBoundingClientRect().top === top, 'Entering grid moved viewport');
-        check(grid.clientHeight > 400, 'Grid does not use available height');
+        check(win.getComputedStyle(shelf).display !== 'none', 'Shelf was hidden instead of scrolled');
+        check(dock.getBoundingClientRect().top < dockTop, 'Shortcuts did not move up with app list');
         for (let i = 0; i < cards.length; i++) {
-            visible(cards[i], grid);
+            visible(cards[i], viewport);
             check(cards[i].classList.contains('focused'), 'Focus skipped card ' + i);
             key(39);
         }
-        check(grid.scrollTop > 0, 'List did not scroll to later rows');
-        check(doc.querySelector('.top-shelf').getBoundingClientRect().top === shelf,
-            'Scrolling moved the shelf');
+        check(viewport.scrollTop > 0, 'List did not scroll to later rows');
+        check(viewport.getBoundingClientRect().top === top,
+            'Scrolling moved the viewport');
+        check(doc.querySelector('.top-bar').getBoundingClientRect().top === statusBar.top,
+            'Scrolling moved the status bar');
         for (let i = cards.length - 1; i > 0; i--) {
             key(37);
-            visible(cards[i - 1], grid);
+            visible(cards[i - 1], viewport);
         }
-        check(grid.scrollTop === 0, 'Returning to first row did not reset scroll');
+        check(viewport.scrollTop > 0, 'Grid focus should keep the first app row visible');
         // Repeated Down/Up must scroll just as Left/Right across row boundaries do.
         for (let i = 0; i < cards.length; i++) {
             key(40);
-            visible(grid.querySelector('.focused'), grid);
+            visible(grid.querySelector('.focused'), viewport);
         }
         key(27);
-        check(!viewport.classList.contains('show-grid'), 'Back did not restore dock');
+        check(viewport.scrollTop === 0, 'Back did not restore dock');
+        check(viewport.getBoundingClientRect().top === top, 'Back did not restore shelf space');
+        check(win.getComputedStyle(shelf).display !== 'none', 'Back did not restore title shelf');
         visible(dock.querySelector('.focused'), viewport);
         key(40);
-        visible(cards[0], grid);
-        check(grid.scrollTop === 0, 'Reentering grid retained stale scroll');
+        visible(cards[0], viewport);
+        check(viewport.scrollTop === doc.getElementById('grid-section').offsetTop,
+            'Reentering grid retained stale scroll');
         key(38);
-        check(!viewport.classList.contains('show-grid'), 'Up from first row did not restore dock');
+        check(viewport.scrollTop === 0, 'Up from first row did not restore dock');
         check(doc.documentElement.scrollTop === 0 && doc.body.scrollTop === 0,
             'Page scrolled instead of list');
         result.textContent = 'PASS: ' + checks + ' layout checks (' + cards.length + ' apps)';
@@ -83,4 +94,13 @@ document.querySelector('iframe').addEventListener('load', function() {
         result.textContent = 'FAIL: ' + error.message;
     }
 });
+// Use a long preview catalog so even the expanded viewport needs to scroll.
+fetch('../launcher/index.html').then(response => response.text()).then(html => {
+    const base = new URL('../launcher/', location.href).href;
+    const fixture = '<script>window.DEFAULT_CATALOG = Array.from({length: 83}, ' +
+        '(_, i) => Object.assign({}, window.DEFAULT_CATALOG[i % window.DEFAULT_CATALOG.length], ' +
+        '{id: "fixture." + i}));<\/script>';
+    document.querySelector('iframe').srcdoc = html.replace('<head>', '<head><base href="' + base + '">')
+        .replace('<script src="js/app.js">', fixture + '<script src="js/app.js">');
+}).catch(error => { document.getElementById('result').textContent = 'FAIL: ' + error.message; });
 </script>
