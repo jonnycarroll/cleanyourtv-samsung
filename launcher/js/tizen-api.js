@@ -89,6 +89,25 @@ const TizenAPI = {
         }
     },
 
+    openUrl: function(url, onError) {
+        if (!this.isTizen() || !window.tizen.application) {
+            window.open(url, '_blank');
+            return;
+        }
+        const failed = function(err) {
+            console.error('[TizenAPI] Could not open URL:', err);
+            if (onError) onError(err);
+            else alert('Could not open this website. Check that Internet is installed and your TV is connected.');
+        };
+        try {
+            const control = new window.tizen.ApplicationControl(
+                'http://tizen.org/appcontrol/operation/view', url);
+            window.tizen.application.launchAppControl(control, null, function() {}, failed);
+        } catch (err) {
+            failed(err);
+        }
+    },
+
     getSystemInfo: function(callback) {
         if (!this.isTizen() || !window.tizen.systeminfo) {
             callback({

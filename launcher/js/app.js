@@ -42,10 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (installedApps && installedApps.length > 0) {
                 // Merge real installed apps with catalog
                 installedApps.forEach(function(inst) {
-                    const match = catalog.find(c => c.id === inst.id || c.aliasId === inst.id);
+                    const match = catalog.find(c => c.id === inst.id || c.aliasId === inst.id ||
+                        (c.installedIds && c.installedIds.indexOf(inst.id) !== -1));
                     if (match) {
+                        match.id = inst.id;
                         match.name = inst.name || match.name;
-                        if (inst.iconPath) match.icon = inst.iconPath;
                     } else if (inst.show !== false) {
                         catalog.push({
                             id: inst.id,
@@ -76,11 +77,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.setAttribute('data-app-id', app.id);
             card.setAttribute('data-index', idx);
 
-            card.innerHTML = `
-                <div class="app-icon-wrap">
-                    <img class="app-icon" src="${app.icon}" alt="${app.name}">
-                </div>
-            `;
+            appendAppIcon(card, app);
 
             card.addEventListener('click', function() {
                 state.currentZone = 'DOCK';
@@ -102,12 +99,11 @@ document.addEventListener('DOMContentLoaded', function() {
             card.setAttribute('data-app-id', app.id);
             card.setAttribute('data-index', idx);
 
-            card.innerHTML = `
-                <div class="app-icon-wrap">
-                    <img class="app-icon" src="${app.icon}" alt="${app.name}">
-                </div>
-                <div class="card-caption">${app.name}</div>
-            `;
+            appendAppIcon(card, app);
+            const caption = document.createElement('div');
+            caption.className = 'card-caption';
+            caption.textContent = app.name;
+            card.appendChild(caption);
 
             card.addEventListener('click', function() {
                 state.currentZone = 'GRID';
@@ -118,6 +114,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             appGridEl.appendChild(card);
         });
+    }
+
+    function appendAppIcon(card, app) {
+        const wrap = document.createElement('div');
+        wrap.className = 'app-icon-wrap';
+        const image = document.createElement('img');
+        image.className = 'app-icon';
+        image.alt = app.name;
+        image.onerror = function() {
+            image.onerror = null;
+            image.src = window.APP_ICONS.browser;
+        };
+        image.src = app.icon;
+        wrap.appendChild(image);
+        card.appendChild(wrap);
     }
 
     // 4. Update Focus and Visual Highlights
@@ -253,18 +264,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (app.id === "cleanyourtv.adfreeyt" || app.aliasId === "tizentube") {
                 // Try launching native TizenTube package if installed
-                TizenAPI.launchApp("k78Z2j0mY1.TizenTube", null, function(success) {
-                    if (!success) {
-                        TizenAPI.launchApp("org.tizen.tizentube", null, function(s2) {
-                            if (!s2) {
-                                openModal('adfree-yt');
-                            }
-                        });
-                    }
+                TizenAPI.launchApp("k78Z2j0mY1.TizenTube", null, function() {
+                    TizenAPI.launchApp("org.tizen.tizentube", null, function() {
+                        openModal('adfree-yt');
+                    });
                 });
                 return;
             }
-            TizenAPI.launchApp(app.id);
+            TizenAPI.launchApp(app.id, null, function() {
+                alert('Could not open ' + app.name + '. Check that it is installed on this TV.');
+            });
         }
     }
 
@@ -374,11 +383,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const cinemaType = target ? target.getAttribute('data-cinema') : null;
             closeModal();
             if (cinemaType === 'pluto') {
-                TizenAPI.launchApp('org.tizen.browser', 'https://pluto.tv/on-demand');
+                TizenAPI.openUrl('https://pluto.tv/on-demand');
             } else if (cinemaType === 'tubi') {
-                TizenAPI.launchApp('org.tizen.browser', 'https://tubitv.com');
+                TizenAPI.openUrl('https://tubitv.com');
             } else if (cinemaType === 'filmrise') {
-                TizenAPI.launchApp('org.tizen.browser', 'https://filmrise-free-movies-tv.en.aptoide.com');
+                TizenAPI.openUrl('https://filmrise-free-movies-tv.en.aptoide.com');
             } else if (cinemaType === 'samsung') {
                 TizenAPI.launchApp('com.samsung.tv.tvplus');
             }
@@ -390,10 +399,13 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
             if (ytAction === 'web') {
                 // Open browser to ad-free Piped/Invidious streaming UI
-                TizenAPI.launchApp('org.tizen.browser', 'https://piped.video');
+                TizenAPI.openUrl('https://piped.video');
             } else if (ytAction === 'stock') {
                 // Launch standard YouTube
-                TizenAPI.launchApp('111299001912');
+                const youtube = state.apps.find(app => app.aliasId === 'youtube');
+                TizenAPI.launchApp(youtube ? youtube.id : '111299001912', null, function() {
+                    alert('Could not open YouTube. Check that it is installed on this TV.');
+                });
             }
         }
     }

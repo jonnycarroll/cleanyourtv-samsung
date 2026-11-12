@@ -25,6 +25,14 @@ const APP_ICONS = {
     gamepad: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="%236366F1"/><path d="M30 36h40c8 0 14 6 12 16l-3 18c-1 6-7 10-13 10-5 0-9-3-11-8l-2-6h-6l-2 6c-2 5-6 8-11 8-6 0-12-4-13-10l-3-18c-2-10 4-16 12-16z" fill="%230F172A"/><path d="M36 46v10M31 51h10" stroke="%2338BDF8" stroke-width="3" stroke-linecap="round"/><circle cx="68" cy="48" r="3" fill="%23EF4444"/><circle cx="62" cy="54" r="3" fill="%2310B981"/></svg>'
 };
 
+// Encode the entire SVG payload before using it in an HTML image attribute.
+// The source strings above only encode color hashes and still contain quotes.
+Object.keys(APP_ICONS).forEach(function(key) {
+    const prefix = 'data:image/svg+xml;utf8,';
+    APP_ICONS[key] = 'data:image/svg+xml;charset=utf-8,' +
+        encodeURIComponent(decodeURIComponent(APP_ICONS[key].slice(prefix.length)));
+});
+
 const DEFAULT_CATALOG = [
     {
         id: "cleanyourtv.retroarcade",
@@ -57,7 +65,7 @@ const DEFAULT_CATALOG = [
         id: "cleanyourtv.adfreeyt",
         aliasId: "tizentube",
         name: "Ad-Free YouTube",
-        desc: "Zero Ads · SponsorBlock · 4K 60fps · Press OK to launch",
+        desc: "Requires a separate TizenTube installation · Press OK for options",
         icon: APP_ICONS.youtubefree,
         color: "rgba(225, 29, 72, 0.45)",
         isDock: true
@@ -92,6 +100,7 @@ const DEFAULT_CATALOG = [
     {
         id: "111299001912",
         aliasId: "youtube",
+        installedIds: ["9Ur5IzDKqV.TizenYouTube", "com.samsung.tv.cobalt-yt"],
         name: "YouTube",
         desc: "Videos, Music and Live Streams",
         icon: APP_ICONS.youtube,
@@ -101,6 +110,7 @@ const DEFAULT_CATALOG = [
     {
         id: "3201512006785",
         aliasId: "3201910019365",
+        installedIds: ["org.tizen.primevideo"],
         name: "Prime Video",
         desc: "Amazon Originals, Movies and Series",
         icon: APP_ICONS.prime,
@@ -110,6 +120,7 @@ const DEFAULT_CATALOG = [
     {
         id: "3201907018807",
         aliasId: "disneyplus",
+        installedIds: ["MCmYXNxgcu.DisneyPlus"],
         name: "Disney+",
         desc: "Disney, Pixar, Marvel, Star Wars & Nat Geo",
         icon: APP_ICONS.disney,
@@ -119,6 +130,7 @@ const DEFAULT_CATALOG = [
     {
         id: "3201807016597",
         aliasId: "appletv",
+        installedIds: ["com.samsung.tv.aria-video"],
         name: "Apple TV",
         desc: "Apple Originals, MLB and MLS Season Pass",
         icon: APP_ICONS.appletv,
@@ -155,6 +167,7 @@ const DEFAULT_CATALOG = [
     {
         id: "org.tizen.browser",
         aliasId: "samsung_browser",
+        installedIds: ["com.samsung.tv.knox-browser"],
         name: "Internet",
         desc: "Samsung Smart TV Web Browser",
         icon: APP_ICONS.browser,
