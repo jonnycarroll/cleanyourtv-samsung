@@ -48,3 +48,38 @@ test('website launch passes its URL to the Tizen view operation', () => {
     assert.equal(request.uri, 'https://example.com/video');
     assert.equal(request.operation, 'http://tizen.org/appcontrol/operation/view');
 });
+
+function buildList(installedApps, isTizen) {
+    const window = load('mock-apps.js', {});
+    const context = vm.createContext({window, document: {addEventListener() {}}});
+    vm.runInContext(fs.readFileSync(path.join(__dirname, '../launcher/js/app.js'), 'utf8'), context);
+    return {apps: context.buildAppList(installedApps, isTizen), catalog: window.DEFAULT_CATALOG};
+}
+
+test('TV lists only installed visible apps and preserves their real launch IDs', () => {
+    const installed = [
+        {id: '9Ur5IzDKqV.TizenYouTube', name: 'YouTube', show: true},
+        {id: 'custom.app', name: 'Custom', iconPath: 'file:///custom.png'},
+        {id: 'org.tizen.primevideo', name: 'Hidden Prime', show: false},
+    ];
+    const {apps, catalog} = buildList(installed, true);
+    assert.deepEqual(Array.from(apps, app => app.id), ['9Ur5IzDKqV.TizenYouTube', 'custom.app']);
+    assert.equal(apps[0].name, 'YouTube');
+    assert.equal(apps[0].aliasId, 'youtube');
+    const youtube = catalog.find(app => app.aliasId === 'youtube');
+    assert.equal(apps[0].icon, youtube.icon);
+    assert.notEqual(youtube.id, apps[0].id); // Discovery must not mutate the preview catalog.
+    assert.equal(apps[1].icon, 'file:///custom.png');
+});
+
+test('empty or failed TV discovery never inserts sample apps', () => {
+    assert.equal(buildList([], true).apps.length, 0);
+    assert.equal(buildList(null, true).apps.length, 0);
+});
+
+test('browser preview retains its sample apps', () => {
+    const {apps, catalog} = buildList(null, false);
+    assert.equal(apps.length, catalog.length);
+    assert.ok(apps.length > 0);
+    assert.notEqual(apps[0], catalog[0]);
+});

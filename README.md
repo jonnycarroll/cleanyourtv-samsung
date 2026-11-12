@@ -336,6 +336,32 @@ Run `python3 tools/update_iptv.py` on your computer. It syncs the latest 350+ li
 
 ---
 
+## Local browser preview
+
+From the repository root, serve the launcher without installing anything on the TV:
+
+```bash
+python3 -m http.server 8080 --bind 127.0.0.1 --directory launcher
+```
+
+Open <http://localhost:8080>. In browser developer tools, select a responsive
+viewport of **1920 × 1080** and scale the preview to fit your monitor. Use the
+arrow keys to navigate, Enter to select, and Escape to return. Refresh after
+editing the source; stop the server with Ctrl+C.
+
+The preview uses the sample app catalog. On the TV, the app list contains only
+installed apps that Tizen marks as visible; catalog artwork is reused for known
+apps. Failed discovery displays an error instead of substituting sample apps.
+The preview checks layout and keyboard navigation;
+native app launching, certificates and TV playback still require a TV. Samsung's
+[resolution guide](https://developer.samsung.com/smarttv/develop/guides/fundamentals/managing-screen-resolution.html)
+describes the Full HD application canvas used by this launcher.
+
+To run the browser layout regression check, serve the repository root instead
+(`python3 -m http.server 8080 --bind 127.0.0.1`) and open
+<http://localhost:8080/tests/launcher-layout.html>. It reports PASS or FAIL while
+checking scrolling and focus visibility against the actual launcher page.
+
 ## 📂 Repository Layout
 
 ```

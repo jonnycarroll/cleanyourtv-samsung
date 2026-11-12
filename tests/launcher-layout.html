@@ -1,0 +1,86 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Launcher scrolling regression check</title>
+<!-- Serve the repository root and open /tests/launcher-layout.html in a browser. -->
+<style>
+    body { margin: 0; }
+    iframe { width: 1920px; height: 1080px; border: 0; }
+</style>
+<pre id="result">RUNNING</pre>
+<iframe src="../launcher/index.html"></iframe>
+<script>
+document.querySelector('iframe').addEventListener('load', function() {
+    const frame = this;
+    const win = frame.contentWindow;
+    const doc = win.document;
+    const result = document.getElementById('result');
+    try {
+        // Make measurements deterministic; production focus effects still apply.
+        const style = doc.createElement('style');
+        style.textContent = '* { transition: none !important; animation: none !important; }';
+        doc.head.appendChild(style);
+        const viewport = doc.getElementById('content-viewport');
+        const grid = doc.getElementById('app-grid');
+        const cards = grid.querySelectorAll('.grid-card');
+        let checks = 0;
+        function check(condition, message) {
+            checks++;
+            if (!condition) throw new Error(message);
+        }
+        function key(code) {
+            win.dispatchEvent(new win.KeyboardEvent('keydown', {keyCode: code, bubbles: true}));
+        }
+        function visible(card, container) {
+            const r = card.getBoundingClientRect();
+            const bounds = container.getBoundingClientRect();
+            // Include the extra six pixels used by the floating focus border.
+            check(r.left - 6 >= bounds.left && r.right + 6 <= bounds.right,
+                'Focused card clipped horizontally: ' + card.dataset.index);
+            check(r.top - 6 >= bounds.top && r.bottom + 6 <= bounds.bottom,
+                'Focused card clipped vertically: ' + card.dataset.index);
+        }
+        check(cards.length > 12, 'Launcher must initialize enough apps to scroll');
+        const dock = doc.getElementById('dock-container');
+        visible(dock.querySelector('.focused'), viewport);
+        for (let i = 1; i < dock.children.length; i++) key(39);
+        visible(dock.querySelector('.focused'), viewport);
+
+        const top = viewport.getBoundingClientRect().top;
+        const shelf = doc.querySelector('.top-shelf').getBoundingClientRect().top;
+        key(40);
+        check(viewport.getBoundingClientRect().top === top, 'Entering grid moved viewport');
+        check(grid.clientHeight > 400, 'Grid does not use available height');
+        for (let i = 0; i < cards.length; i++) {
+            visible(cards[i], grid);
+            check(cards[i].classList.contains('focused'), 'Focus skipped card ' + i);
+            key(39);
+        }
+        check(grid.scrollTop > 0, 'List did not scroll to later rows');
+        check(doc.querySelector('.top-shelf').getBoundingClientRect().top === shelf,
+            'Scrolling moved the shelf');
+        for (let i = cards.length - 1; i > 0; i--) {
+            key(37);
+            visible(cards[i - 1], grid);
+        }
+        check(grid.scrollTop === 0, 'Returning to first row did not reset scroll');
+        // Repeated Down/Up must scroll just as Left/Right across row boundaries do.
+        for (let i = 0; i < cards.length; i++) {
+            key(40);
+            visible(grid.querySelector('.focused'), grid);
+        }
+        key(27);
+        check(!viewport.classList.contains('show-grid'), 'Back did not restore dock');
+        visible(dock.querySelector('.focused'), viewport);
+        key(40);
+        visible(cards[0], grid);
+        check(grid.scrollTop === 0, 'Reentering grid retained stale scroll');
+        key(38);
+        check(!viewport.classList.contains('show-grid'), 'Up from first row did not restore dock');
+        check(doc.documentElement.scrollTop === 0 && doc.body.scrollTop === 0,
+            'Page scrolled instead of list');
+        result.textContent = 'PASS: ' + checks + ' layout checks (' + cards.length + ' apps)';
+    } catch (error) {
+        result.textContent = 'FAIL: ' + error.message;
+    }
+});
+</script>

@@ -77,6 +77,7 @@ body {
 
 /* Top Status Bar */
 .top-bar {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -139,6 +140,7 @@ body {
 
 /* Top Shelf */
 .top-shelf {
+    flex-shrink: 0;
     height: 240px;
     display: flex;
     flex-direction: column;
@@ -177,23 +179,28 @@ body {
 .content-viewport {
     position: relative;
     flex: 1;
+    min-height: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: transform var(--transition-smooth);
 }
 
-/* Scroll mode when user navigates into Grid */
-.content-viewport.show-grid {
-    transform: translateY(-290px);
+/* Keep the viewport still; give its space to the grid when navigating down. */
+.content-viewport.show-grid .dock-section {
+    display: none;
+}
+
+.content-viewport.show-grid .grid-section {
+    margin-top: 0;
 }
 
 /* Apple TV style Dock */
 .dock-section {
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 0 36px 0;
+    padding: 32px 0 44px 0;
 }
 
 .dock-container {
@@ -256,12 +263,15 @@ body {
 
 /* Grid Section */
 .grid-section {
-    margin-top: 40px;
+    flex: 1;
+    min-height: 0;
+    margin-top: 24px;
     display: flex;
     flex-direction: column;
 }
 
 .section-title {
+    flex-shrink: 0;
     font-size: 26px;
     font-weight: 600;
     color: var(--text-primary);
@@ -270,10 +280,32 @@ body {
 }
 
 .app-grid {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: 160px;
+    align-content: start;
     gap: 28px;
-    padding: 8px;
+    /* Room for the scaled card, focus border and shadow at every edge. */
+    padding: 32px 40px 48px;
+}
+
+.app-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-list-message {
+    grid-column: 1 / -1;
+    font-size: 24px;
+    color: var(--text-secondary);
+}
+
+.app-grid::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 3px;
 }
 
 .app-grid .app-card {

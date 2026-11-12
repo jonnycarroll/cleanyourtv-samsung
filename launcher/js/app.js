@@ -2,6 +2,24 @@
  * CleanYourTV Launcher Controller for Samsung Tizen OS
  */
 
+function buildAppList(installedApps, isTizen) {
+    if (!isTizen) return window.DEFAULT_CATALOG.map(app => Object.assign({}, app));
+
+    // The TV supplies membership and launch IDs; the catalog supplies artwork only.
+    return (installedApps || []).filter(app => app.show !== false).map(function(inst) {
+        const metadata = window.DEFAULT_CATALOG.find(app => app.id === inst.id ||
+            app.aliasId === inst.id || (app.installedIds && app.installedIds.includes(inst.id)));
+        return {
+            id: inst.id,
+            name: inst.name || inst.id,
+            aliasId: metadata && metadata.aliasId,
+            desc: 'Installed Application',
+            icon: (metadata && metadata.icon) || inst.iconPath || window.APP_ICONS.browser,
+            color: (metadata && metadata.color) || 'rgba(100, 150, 255, 0.3)'
+        };
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     TizenAPI.init();
     if (window.IPTVPlayer) IPTVPlayer.init();
@@ -37,32 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // 1. Initialize Applications List
     function initApps() {
         TizenAPI.getInstalledApps(function(installedApps) {
-            let catalog = window.DEFAULT_CATALOG.slice();
-            
-            if (installedApps && installedApps.length > 0) {
-                // Merge real installed apps with catalog
-                installedApps.forEach(function(inst) {
-                    const match = catalog.find(c => c.id === inst.id || c.aliasId === inst.id ||
-                        (c.installedIds && c.installedIds.indexOf(inst.id) !== -1));
-                    if (match) {
-                        match.id = inst.id;
-                        match.name = inst.name || match.name;
-                    } else if (inst.show !== false) {
-                        catalog.push({
-                            id: inst.id,
-                            name: inst.name || inst.id,
-                            desc: 'Installed Application',
-                            icon: inst.iconPath || window.APP_ICONS.browser,
-                            color: 'rgba(100, 150, 255, 0.3)',
-                            isDock: false
-                        });
-                    }
-                });
-            }
-
-            state.apps = catalog;
+            state.apps = buildAppList(installedApps, TizenAPI.isTizen());
+            if (state.apps.length === 0) state.currentZone = 'TOP';
             renderDock();
             renderGrid();
+            if (state.apps.length === 0) {
+                const message = document.createElement('p');
+                message.className = 'app-list-message';
+                message.textContent = installedApps === null ?
+                    'Unable to load installed apps. Restart CleanHub TV to retry.' :
+                    'No visible installed apps found.';
+                appGridEl.appendChild(message);
+            }
             updateFocus();
         });
     }
@@ -71,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderDock() {
         dockContainerEl.innerHTML = '';
         const dockApps = state.apps.slice(0, LauncherConfig.settings.dockSize);
+        state.dockIndex = Math.max(0, Math.min(state.dockIndex, dockApps.length - 1));
         dockApps.forEach(function(app, idx) {
             const card = document.createElement('div');
             card.className = 'app-card dock-card';
@@ -184,6 +189,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 focusedEl = gridCards[state.gridIndex];
                 focusedEl.classList.add('focused');
                 focusedApp = state.apps[state.gridIndex];
+                // Scroll only the list, keeping the shelf and viewport in place.
+                // Use layout coordinates so focus scaling/transitions do not
+                // change the scroll target during repeated remote key presses.
+                const cardTop = focusedEl.offsetTop - appGridEl.offsetTop;
+                const inset = 32;
+                if (cardTop - inset < appGridEl.scrollTop) {
+                    appGridEl.scrollTop = Math.max(0, cardTop - inset);
+                } else if (cardTop + focusedEl.offsetHeight + inset >
+                        appGridEl.scrollTop + appGridEl.clientHeight) {
+                    appGridEl.scrollTop = cardTop + focusedEl.offsetHeight +
+                        inset - appGridEl.clientHeight;
+                }
             }
         } else if (state.currentZone === 'MODAL') {
             let activeModalEl = null;
@@ -211,9 +228,21 @@ document.addEventListener('DOMContentLoaded', function() {
             setAmbientGlow(focusedApp.color || 'rgba(100, 150, 255, 0.35)');
         }
 
-        // Align floating focus highlight
+        updateFocusHighlight(focusedEl);
+    }
+
+    function updateFocusHighlight(focusedEl) {
+        focusedEl = focusedEl || appGridEl.querySelector('.focused');
+        // Align floating focus highlight after the list has scrolled.
         if (focusedEl && state.currentZone !== 'MODAL') {
             const rect = focusedEl.getBoundingClientRect();
+            if (state.currentZone === 'GRID') {
+                const bounds = appGridEl.getBoundingClientRect();
+                if (rect.top - 6 < bounds.top || rect.bottom + 6 > bounds.bottom) {
+                    floatingFocusEl.style.opacity = '0';
+                    return;
+                }
+            }
             floatingFocusEl.style.width = (rect.width + 12) + 'px';
             floatingFocusEl.style.height = (rect.height + 12) + 'px';
             floatingFocusEl.style.transform = `translate3d(${rect.left - 6}px, ${rect.top - 6}px, 0)`;
@@ -484,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const key = e.keyCode;
         const GRID_COLUMNS = 6;
-        const dockCount = LauncherConfig.settings.dockSize;
+        const dockCount = Math.min(LauncherConfig.settings.dockSize, state.apps.length);
         const gridCount = state.apps.length;
 
         // Remote Key codes:
@@ -543,7 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
 
             case 40: // Down
-                if (state.currentZone === 'TOP') {
+                if (state.currentZone === 'TOP' && dockCount > 0) {
                     state.currentZone = 'DOCK';
                     state.dockIndex = 0;
                 } else if (state.currentZone === 'DOCK') {
@@ -594,6 +623,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.addEventListener('keydown', onKeyDown);
+    // Keep the highlight aligned after mouse-wheel/trackpad scrolling too.
+    appGridEl.addEventListener('scroll', function() {
+        if (state.currentZone === 'GRID') updateFocusHighlight();
+    });
 
     // 8. Clock & Date Tick
     function updateClock() {
@@ -649,7 +682,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // 10. System Info update
     TizenAPI.getSystemInfo(function(info) {
         if (info && info.model) {
-            document.getElementById('network-name').textContent = info.network.includes('Wi-Fi') ? 'Wi-Fi' : 'Ethernet';
+            const networkNameEl = document.getElementById('network-name');
+            if (networkNameEl) {
+                networkNameEl.textContent = (info.network || '').includes('Wi-Fi') ? 'Wi-Fi' : 'Ethernet';
+            }
             const statsEl = document.getElementById('sys-stats');
             if (statsEl) {
                 statsEl.textContent = `${info.model} · ${info.version}`;
