@@ -166,7 +166,7 @@
             if (!station) return;
 
             if (this.stationNameEl) this.stationNameEl.textContent = station.name;
-            if (this.stationGenreEl) this.stationGenreEl.textContent = `${station.genre} · ${station.desc}`;
+            if (this.stationGenreEl) this.stationGenreEl.textContent = `${station.genre} · ${station.desc}`;
             if (this.statusPillEl) {
                 this.statusPillEl.textContent = this.isPlaying ? '▶ STREAMING LIVE (COMMERCIAL-FREE)' : '⏸ PAUSED';
             }

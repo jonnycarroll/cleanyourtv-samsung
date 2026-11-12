@@ -480,7 +480,7 @@ const RetroArcade = (function() {
                 this.ctx.fillStyle = '#cbd5e1';
                 this.ctx.font = '20px monospace';
                 this.ctx.fillText(`Final Score: ${this.score}`, this.w / 2, this.h / 2 + 25);
-                this.ctx.fillText('Press OK to Restart · Back to Exit', this.w / 2, this.h / 2 + 65);
+                this.ctx.fillText('Press OK to Restart · Back to Exit', this.w / 2, this.h / 2 + 65);
                 this.ctx.textAlign = 'left';
             }
         }
@@ -720,7 +720,7 @@ const RetroArcade = (function() {
                 this.ctx.fillStyle = '#cbd5e1';
                 this.ctx.font = '20px monospace';
                 this.ctx.fillText(`Final Score: ${this.score}`, this.w / 2, this.h / 2 + 25);
-                this.ctx.fillText('Press OK to Play Again · Back to Exit', this.w / 2, this.h / 2 + 65);
+                this.ctx.fillText('Press OK to Play Again · Back to Exit', this.w / 2, this.h / 2 + 65);
                 this.ctx.textAlign = 'left';
             }
         }
@@ -1001,7 +1001,7 @@ const RetroArcade = (function() {
                 this.ctx.fillText(this.p1Score >= 7 ? 'YOU WIN!' : 'CPU WINS!', this.w / 2, this.h / 2 - 20);
                 this.ctx.fillStyle = '#cbd5e1';
                 this.ctx.font = '20px monospace';
-                this.ctx.fillText('Press OK to Rematch · Back to Exit', this.w / 2, this.h / 2 + 35);
+                this.ctx.fillText('Press OK to Rematch · Back to Exit', this.w / 2, this.h / 2 + 35);
                 this.ctx.textAlign = 'left';
             }
         }
@@ -1189,7 +1189,7 @@ const RetroArcade = (function() {
                 this.ctx.fillText('GAME OVER', this.w / 2, this.h / 2 - 20);
                 this.ctx.fillStyle = '#cbd5e1';
                 this.ctx.font = '20px monospace';
-                this.ctx.fillText(`Score: ${this.score} · Lines: ${this.lines}`, this.w / 2, this.h / 2 + 25);
+                this.ctx.fillText(`Score: ${this.score} · Lines: ${this.lines}`, this.w / 2, this.h / 2 + 25);
                 this.ctx.fillText('Press OK to Play Again', this.w / 2, this.h / 2 + 65);
                 this.ctx.textAlign = 'left';
             }

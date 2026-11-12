@@ -153,22 +153,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 const btnAction = focusedEl.getAttribute('data-action');
                 focusedAppNameEl.textContent = focusedEl.querySelector('span').textContent;
                 if (btnAction === 'arcade') {
-                    focusedAppDescEl.textContent = '60fps Retro Classics & Custom ROM Player · Press OK';
+                    focusedAppDescEl.textContent = '60fps Retro Classics & Custom ROM Player · Press OK';
                     setAmbientGlow('rgba(236, 72, 153, 0.45)');
                 } else if (btnAction === 'livetv') {
-                    focusedAppDescEl.textContent = 'Free Public Broadcasts from All Countries · Press OK to watch';
+                    focusedAppDescEl.textContent = 'Free Public Broadcasts from All Countries · Press OK to watch';
                     setAmbientGlow('rgba(56, 189, 248, 0.45)');
                 } else if (btnAction === 'artmode') {
-                    focusedAppDescEl.textContent = 'The Frame Mode · 4K Museum Masterpieces & Ambient Clock · Press OK';
+                    focusedAppDescEl.textContent = 'The Frame Mode · 4K Museum Masterpieces & Ambient Clock · Press OK';
                     setAmbientGlow('rgba(245, 158, 11, 0.45)');
                 } else if (btnAction === 'music') {
-                    focusedAppDescEl.textContent = '24/7 Commercial-Free Lo-Fi, Piano & Ambient Beats · Press OK';
+                    focusedAppDescEl.textContent = '24/7 Commercial-Free Lo-Fi, Piano & Ambient Beats · Press OK';
                     setAmbientGlow('rgba(217, 119, 6, 0.45)');
                 } else if (btnAction === 'sleep') {
-                    focusedAppDescEl.textContent = '1-Click Bedtime Sleep Timer · Powers off TV automatically';
+                    focusedAppDescEl.textContent = '1-Click Bedtime Sleep Timer · Powers off TV automatically';
                     setAmbientGlow('rgba(147, 51, 234, 0.45)');
                 } else if (btnAction === 'remote') {
-                    focusedAppDescEl.textContent = 'Scan QR to control TV from your phone browser · No app needed';
+                    focusedAppDescEl.textContent = 'Scan QR to control TV from your phone browser · No app needed';
                     setAmbientGlow('rgba(52, 211, 153, 0.45)');
                 } else {
                     focusedAppDescEl.textContent = 'System Quick Action';
@@ -692,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const statsEl = document.getElementById('sys-stats');
             if (statsEl) {
-                statsEl.textContent = `${info.model} · ${info.version}`;
+                statsEl.textContent = `${info.model} · ${info.version}`;
             }
         }
     });

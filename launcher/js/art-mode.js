@@ -209,7 +209,7 @@
 
             if (this.titleEl) this.titleEl.textContent = art.title;
             if (this.artistEl) this.artistEl.textContent = art.artist;
-            if (this.metaEl) this.metaEl.textContent = `${art.year} · ${art.medium}`;
+            if (this.metaEl) this.metaEl.textContent = `${art.year} · ${art.medium}`;
             if (this.museumEl) this.museumEl.textContent = art.museum;
 
             this.updatePill();
@@ -271,9 +271,9 @@
             const current = this.currentIndex + 1;
             const total = ART_CATALOG.length;
             const status = this.isPaused ? '⏸ PAUSED' : '▶ AUTO';
-            const imageStatus = this.imageLoadState === 'loading' ? ' · LOADING IMAGE' :
-                this.imageLoadState === 'error' ? ' · IMAGE UNAVAILABLE' : '';
-            this.statusPillEl.textContent = `${current} / ${total} · ${status}${imageStatus}`;
+            const imageStatus = this.imageLoadState === 'loading' ? ' · LOADING IMAGE' :
+                this.imageLoadState === 'error' ? ' · IMAGE UNAVAILABLE' : '';
+            this.statusPillEl.textContent = `${current} / ${total} · ${status}${imageStatus}`;
         },
 
         updateClock: function() {

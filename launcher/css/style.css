@@ -1027,6 +1027,9 @@ body {
     padding: 8px 20px;
     border-radius: 9999px;
     font-size: 14px;
+    /* Keep play/pause glyph font metrics from changing the pill height. */
+    line-height: 20px;
+    white-space: nowrap;
     font-weight: 600;
     letter-spacing: 0.5px;
 }
@@ -1258,6 +1261,8 @@ body {
     border: 1px solid rgba(217, 119, 6, 0.45);
     color: #fbbf24;
     font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
     font-weight: 700;
     letter-spacing: 0.8px;
     padding: 4px 12px;

@@ -38,7 +38,7 @@ const DEFAULT_CATALOG = [
         id: "cleanyourtv.retroarcade",
         aliasId: "retroarcade",
         name: "Retro Arcade 4K",
-        desc: "Built-in 60fps Retro Classics & ROM Player · Controller & Remote Ready",
+        desc: "Built-in 60fps Retro Classics & ROM Player · Controller & Remote Ready",
         icon: APP_ICONS.arcade,
         color: "rgba(236, 72, 153, 0.45)",
         isDock: true
@@ -56,7 +56,7 @@ const DEFAULT_CATALOG = [
         id: "cleanyourtv.livetv",
         aliasId: "livetv",
         name: "Live World TV",
-        desc: "Free Public Broadcasts from All Countries · News, Sports & Entertainment",
+        desc: "Free Public Broadcasts from All Countries · News, Sports & Entertainment",
         icon: APP_ICONS.livetv,
         color: "rgba(56, 189, 248, 0.45)",
         isDock: true
@@ -65,7 +65,7 @@ const DEFAULT_CATALOG = [
         id: "cleanyourtv.adfreeyt",
         aliasId: "tizentube",
         name: "Ad-Free YouTube",
-        desc: "Requires a separate TizenTube installation · Press OK for options",
+        desc: "Requires a separate TizenTube installation · Press OK for options",
         icon: APP_ICONS.youtubefree,
         color: "rgba(225, 29, 72, 0.45)",
         isDock: true
@@ -74,7 +74,7 @@ const DEFAULT_CATALOG = [
         id: "cleanyourtv.freecinema",
         aliasId: "freecinema",
         name: "Free Cinema (VOD)",
-        desc: "10,000+ Free On-Demand Movies & TV Series · Tubi, Pluto & FilmRise",
+        desc: "10,000+ Free On-Demand Movies & TV Series · Tubi, Pluto & FilmRise",
         icon: APP_ICONS.cinema,
         color: "rgba(124, 58, 237, 0.45)",
         isDock: true

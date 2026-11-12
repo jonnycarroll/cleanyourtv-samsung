@@ -137,7 +137,7 @@ const IPTVPlayer = {
         const isFav = (window.IPTVService && IPTVService.isFavorite) ? IPTVService.isFavorite(channel.url) : false;
         numEl.textContent = `CH ${chNumber}`;
         nameEl.innerHTML = `${isFav ? '<span class="fav-star">★ </span>' : ''}${channel.name}`;
-        metaEl.textContent = `${channel.flag || '📺'} ${channel.country || ''} · ${channel.category || 'General'} · 1080p LIVE`;
+        metaEl.textContent = `${channel.flag || '📺'} ${channel.country || ''} · ${channel.category || 'General'} · 1080p LIVE`;
 
         if (channel.logo) {
             logoEl.src = channel.logo;
@@ -148,7 +148,7 @@ const IPTVPlayer = {
 
         const hintEl = document.querySelector('.osd-hint');
         if (hintEl) {
-            hintEl.textContent = isFav ? '★ Favorited · Press F/Yellow to remove · ◄ Guide' : 'Press F/Yellow to ★ Favorite · ◄ Guide · ▲/▼ surf';
+            hintEl.textContent = isFav ? '★ Favorited · Press F/Yellow to remove · ◄ Guide' : 'Press F/Yellow to ★ Favorite · ◄ Guide · ▲/▼ surf';
         }
 
         osdEl.classList.add('visible');

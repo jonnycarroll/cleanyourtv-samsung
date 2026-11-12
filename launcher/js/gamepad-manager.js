@@ -198,7 +198,7 @@ const GamepadManager = (function() {
         if (nameEl) nameEl.textContent = cleanGamepadName(gp.id);
 
         const idSubEl = document.getElementById('gp-id-sub');
-        if (idSubEl) idSubEl.textContent = (gp.id || 'Standard Gamepad') + ' · Index ' + gp.index;
+        if (idSubEl) idSubEl.textContent = (gp.id || 'Standard Gamepad') + ' · Index ' + gp.index;
 
         // Stick coordinates (deadzone evaluation)
         const lx = gp.axes[0] || 0;
@@ -274,7 +274,7 @@ const GamepadManager = (function() {
 
         const coordEl = document.getElementById(coordElId);
         if (coordEl) {
-            coordEl.textContent = `X: ${x.toFixed(3)} · Y: ${y.toFixed(3)}`;
+            coordEl.textContent = `X: ${x.toFixed(3)} · Y: ${y.toFixed(3)}`;
         }
     }
 
